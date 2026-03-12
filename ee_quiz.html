@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electronic Engineering — Interview Quiz</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
+body{margin:0;font-family:'Segoe UI',system-ui,sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.screen{display:none;width:100%;max-width:720px}
+.screen.active{display:block}
+/* START SCREEN */
+#start-screen{text-align:center;padding:40px 20px}
+#start-screen h1{font-size:2rem;color:#58a6ff;margin:0 0 8px;letter-spacing:1px}
+#start-screen .sub{color:#8b949e;font-size:0.95rem;margin-bottom:32px}
+.badge-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px}
+.badge{background:#161b22;border:1px solid #30363d;padding:6px 14px;border-radius:20px;font-size:0.78rem;color:#8b949e}
+.badge span{color:#58a6ff;font-weight:600}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.info-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:16px;text-align:center}
+.info-card .num{font-size:2rem;font-weight:700;color:#58a6ff}
+.info-card .lbl{font-size:0.75rem;color:#8b949e;margin-top:4px}
+.btn-primary{background:#238636;border:none;color:#fff;padding:14px 40px;font-size:1rem;font-weight:600;border-radius:8px;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:#2ea043}
+/* QUIZ SCREEN */
+#quiz-screen{background:#161b22;border:1px solid #30363d;border-radius:12px;overflow:hidden}
+.quiz-header{padding:16px 20px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between}
+.q-counter{font-size:0.85rem;color:#8b949e}
+.q-counter strong{color:#e6edf3}
+.cat-badge{font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:12px;letter-spacing:.5px;text-transform:uppercase}
+.cat-ohm{background:#1f3a5f;color:#58a6ff;border:1px solid #1f4a8a}
+.cat-vd{background:#2d1f5f;color:#b48eff;border:1px solid #4a1fa8}
+.cat-smt{background:#3d2a00;color:#d29922;border:1px solid #8a5a00}
+.progress-wrap{height:4px;background:#21262d}
+.progress-bar{height:4px;background:linear-gradient(90deg,#1f6feb,#58a6ff);transition:width .4s ease}
+.svg-wrap{padding:16px 20px;background:#0d1117}
+.svg-wrap svg{width:100%;height:auto;display:block;pointer-events:none}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px}
+.opt-btn{background:#21262d;border:1px solid #30363d;border-radius:8px;color:#e6edf3;padding:12px 16px;font-size:0.92rem;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;display:flex;align-items:center;gap:10px}
+.opt-btn:hover:not(:disabled){border-color:#58a6ff;background:#1c2030}
+.opt-btn:disabled{cursor:default}
+.opt-btn .label{font-weight:700;color:#8b949e;font-size:0.85rem;min-width:20px}
+.opt-btn.correct{background:#0d2a1f;border-color:#3fb950;color:#3fb950}
+.opt-btn.correct .label{color:#3fb950}
+.opt-btn.wrong{background:#2a0d0d;border-color:#f85149;color:#f85149}
+.opt-btn.wrong .label{color:#f85149}
+.feedback{margin:0 20px;padding:12px 16px;border-radius:8px;font-size:0.88rem;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:#0d2a1f;border:1px solid #3fb950;color:#3fb950}
+.feedback.wrong{background:#2a0d0d;border:1px solid #f85149;color:#f85149}
+.feedback strong{display:block;margin-bottom:4px;font-size:0.95rem}
+.quiz-footer{padding:16px 20px;display:flex;justify-content:flex-end;border-top:1px solid #21262d;margin-top:8px}
+.btn-next{background:#1f6feb;border:none;color:#fff;padding:10px 28px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;display:none;transition:background .2s}
+.btn-next:hover{background:#388bfd}
+.btn-next.show{display:block}
+/* RESULT SCREEN */
+#result-screen{text-align:center;padding:40px 24px;background:#161b22;border:1px solid #30363d;border-radius:12px}
+.score-ring{width:140px;height:140px;margin:0 auto 24px}
+.result-title{font-size:1.6rem;font-weight:700;color:#e6edf3;margin-bottom:8px}
+.result-sub{color:#8b949e;margin-bottom:28px}
+.breakdown{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.bd-card{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:14px}
+.bd-card .v{font-size:1.6rem;font-weight:700}
+.bd-card .t{font-size:0.75rem;color:#8b949e;margin-top:3px}
+.btn-restart{background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:11px 30px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-restart:hover{background:#30363d}
+</style>
+</head>
+<body>
+
+<!-- START SCREEN -->
+<div id="start-screen" class="screen active">
+  <h1>⚡ EE Interview Quiz</h1>
+  <p class="sub">Electronic Engineering Technical Assessment</p>
+  <div class="badge-row">
+    <div class="badge">Ohm's Law <span>7 Qs</span></div>
+    <div class="badge">Voltage Dividers <span>6 Qs</span></div>
+    <div class="badge">SMT Components <span>7 Qs</span></div>
+  </div>
+  <div class="info-grid">
+    <div class="info-card"><div class="num">20</div><div class="lbl">Questions</div></div>
+    <div class="info-card"><div class="num">4</div><div class="lbl">Options Each</div></div>
+    <div class="info-card"><div class="num">~15</div><div class="lbl">Minutes</div></div>
+  </div>
+  <button class="btn-primary" onclick="startQuiz()">Begin Assessment</button>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="quiz-screen" class="screen">
+  <div class="progress-wrap"><div class="progress-bar" id="prog-bar"></div></div>
+  <div class="quiz-header">
+    <div class="q-counter">Question <strong id="q-num">1</strong> of <strong>20</strong></div>
+    <div class="cat-badge" id="cat-badge">Ohm's Law</div>
+  </div>
+  <div class="svg-wrap" id="svg-wrap"></div>
+  <div class="options" id="options"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="quiz-footer">
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="result-screen" class="screen">
+  <svg class="score-ring" viewBox="0 0 140 140">
+    <circle cx="70" cy="70" r="58" fill="none" stroke="#21262d" stroke-width="12"/>
+    <circle cx="70" cy="70" r="58" fill="none" stroke="#3fb950" stroke-width="12"
+      stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round"
+      transform="rotate(-90 70 70)" id="score-ring-circle"/>
+    <text x="70" y="68" text-anchor="middle" fill="#e6edf3" font-size="28" font-weight="700" id="score-pct">0%</text>
+    <text x="70" y="88" text-anchor="middle" fill="#8b949e" font-size="11">SCORE</text>
+  </svg>
+  <div class="result-title" id="result-title">Assessment Complete</div>
+  <div class="result-sub" id="result-sub"></div>
+  <div class="breakdown">
+    <div class="bd-card"><div class="v" id="r-correct" style="color:#3fb950">0</div><div class="t">Correct</div></div>
+    <div class="bd-card"><div class="v" id="r-wrong" style="color:#f85149">0</div><div class="t">Incorrect</div></div>
+    <div class="bd-card"><div class="v" id="r-pct" style="color:#58a6ff">0%</div><div class="t">Accuracy</div></div>
+  </div>
+  <button class="btn-restart" onclick="restart()">Retake Quiz</button>
+</div>
+
+<script>
+// ── Anti-cheat ──────────────────────────────────────────────────────────────
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('dragstart',e=>e.preventDefault());
+document.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if((e.ctrlKey||e.metaKey)&&['c','a','u','s','p','x','v'].includes(k))e.preventDefault();
+  if(['F12','F5'].includes(e.key))e.preventDefault();
+});
+document.addEventListener('selectstart',e=>e.preventDefault());
+
+// ── SVG Helpers ──────────────────────────────────────────────────────────────
+const BG='<rect width="560" height="280" fill="#0d1117" rx="6"/>';
+const W='#8b949e'; // wire color
+const RC='#58a6ff'; // resistor color
+const GC='#3fb950'; // green / source
+const YC='#d29922'; // yellow / unknown
+const TC='#e6edf3'; // text color
+const PC='#b48eff'; // purple
+
+function wire(x1,y1,x2,y2){return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${W}" stroke-width="2"/>`;}
+function vsrc(cx,cy,val,color=GC){
+  return`<circle cx="${cx}" cy="${cy}" r="26" fill="#0d2218" stroke="${color}" stroke-width="2"/>
+<text x="${cx}" y="${cy+5}" text-anchor="middle" fill="${color}" font-size="13" font-weight="700" font-family="monospace">${val}</text>
+<text x="${cx-12}" y="${cy-14}" fill="${color}" font-size="13" font-weight="700">+</text>
+<text x="${cx-12}" y="${cy+24}" fill="${color}" font-size="12">−</text>`;}
+function res(x,y,w,h,label,color=RC){
+  return`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" fill="#0d1f3c" stroke="${color}" stroke-width="2"/>
+<text x="${x+w/2}" y="${y+h/2+5}" text-anchor="middle" fill="${color}" font-size="12" font-weight="600" font-family="monospace">${label}</text>`;}
+function qtxt(lines,y0=24){
+  return lines.map((l,i)=>`<text x="280" y="${y0+i*20}" text-anchor="middle" fill="${TC}" font-size="14" font-family="'Segoe UI',sans-serif">${l}</text>`).join('');}
+function arr(x1,y1,x2,y2,color=YC){
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/len,uy=dy/len;
+  const ax1=x2-ux*10-uy*5,ay1=y2-uy*10+ux*5;
+  const ax2=x2-ux*10+uy*5,ay2=y2-uy*10-ux*5;
+  return`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2"/>
+<polygon points="${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}" fill="${color}"/>`;}
+function node(x,y,label,color=TC,side='right'){
+  const tx=side==='right'?x+10:x-10,an=side==='right'?'start':'end';
+  return`<circle cx="${x}" cy="${y}" r="4" fill="${color}"/>
+<text x="${tx}" y="${y+5}" fill="${color}" font-size="12" text-anchor="${an}">${label}</text>`;}
+function chip(x,y,w,h,marking,bodyColor='#c8a44a',endColor='#d0d0d0',textColor='#111'){
+  return`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="5" fill="${bodyColor}" stroke="#8a6a00" stroke-width="1.5"/>
+<rect x="${x}" y="${y}" width="${w*0.17}" height="${h}" rx="3" fill="${endColor}" stroke="#999" stroke-width="1"/>
+<rect x="${x+w*0.83}" y="${y}" width="${w*0.17}" height="${h}" rx="3" fill="${endColor}" stroke="#999" stroke-width="1"/>
+<text x="${x+w/2}" y="${y+h/2+7}" text-anchor="middle" fill="${textColor}" font-size="${Math.min(h*0.55,20)}px" font-weight="700" font-family="monospace">${marking}</text>`;}
+
+// ── Questions Data ────────────────────────────────────────────────────────────
+const questions=[
+
+// ─── OHM'S LAW ───────────────────────────────────────────────────────────────
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['A 9 V source is connected in series with a 330 Ω resistor.','Calculate the current I flowing through the circuit.'])}
+${wire(100,80,100,114)}${vsrc(100,140,'9 V')}${wire(100,166,100,230)}
+${wire(100,80,190,80)}${res(190,67,160,26,'R = 330 Ω')}${wire(350,80,460,80)}
+${wire(460,80,460,230)}${wire(100,230,460,230)}
+${arr(380,72,420,72)}
+<text x="420" y="66" fill="${YC}" font-size="14" font-weight="700" font-family="monospace">I = ?</text>
+</svg>`,
+opts:['A) 12.33 mA','B) 27.27 mA','C) 36.66 mA','D) 3.67 mA'],ans:1,
+exp:'I = V ÷ R = 9 V ÷ 330 Ω = 0.02727 A = 27.27 mA'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['A 5 V source is applied across a 100 Ω resistor.','What is the power P dissipated by the resistor?'])}
+${wire(110,80,110,114)}${vsrc(110,140,'5 V')}${wire(110,166,110,230)}
+${wire(110,80,200,80)}${res(200,67,160,26,'R = 100 Ω')}${wire(360,80,450,80)}
+${wire(450,80,450,230)}${wire(110,230,450,230)}
+<text x="280" y="220" text-anchor="middle" fill="${YC}" font-size="16" font-weight="700" font-family="monospace">P = ?</text>
+</svg>`,
+opts:['A) 0.05 W','B) 2.50 W','C) 0.25 W','D) 0.50 W'],ans:2,
+exp:'P = V² ÷ R = 25 ÷ 100 = 0.25 W  (or P = V × I = 5 × 0.05 = 0.25 W)'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Three resistors are connected in series to a 12 V source.','Find the total current I through the circuit.'])}
+${wire(60,80,60,114)}${vsrc(60,140,'12 V')}${wire(60,166,60,220)}
+${wire(60,80,110,80)}${res(110,67,100,26,'100 Ω')}${wire(210,80,250,80)}
+${res(250,67,100,26,'220 Ω')}${wire(350,80,390,80)}${res(390,67,100,26,'470 Ω')}
+${wire(490,80,490,220)}${wire(60,220,490,220)}
+${arr(420,72,460,72)}
+<text x="460" y="66" fill="${YC}" font-size="13" font-weight="700" font-family="monospace">I = ?</text>
+</svg>`,
+opts:['A) 10.00 mA','B) 15.19 mA','C) 26.09 mA','D) 8.47 mA'],ans:1,
+exp:'R_T = 100+220+470 = 790 Ω.  I = 12 V ÷ 790 Ω = 15.19 mA'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Two resistors are connected in parallel.','Calculate the equivalent resistance R_eq.'])}
+${wire(80,80,80,220)}${wire(80,80,160,80)}${wire(80,220,160,220)}
+${wire(160,80,160,100)}${res(140,100,40,70,'1 kΩ',RC)}${wire(160,170,160,220)}
+${wire(160,80,260,80)}${wire(260,80,260,100)}${res(240,100,40,70,'2.2 kΩ',PC)}${wire(260,170,260,220)}
+${wire(260,80,340,80)}${wire(260,220,340,220)}${wire(340,80,340,220)}
+<text x="280" y="170" text-anchor="middle" fill="${TC}" font-size="13">R₁ = 1 kΩ ∥ R₂ = 2.2 kΩ</text>
+<text x="420" y="155" fill="${YC}" font-size="14" font-weight="700" font-family="monospace">R_eq = ?</text>
+</svg>`,
+opts:['A) 3 200 Ω','B) 1 100 Ω','C) 687.5 Ω','D) 488.9 Ω'],ans:2,
+exp:'R_eq = (1000 × 2200) ÷ (1000 + 2200) = 2 200 000 ÷ 3200 = 687.5 Ω'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['A current of 2.3 mA flows through a 4.7 kΩ resistor.','What is the voltage V across the resistor?'])}
+${wire(110,140,210,140)}
+${res(210,127,160,26,'R = 4.7 kΩ')}
+${wire(370,140,460,140)}
+${arr(120,132,160,132)}
+<text x="150" y="124" fill="${YC}" font-size="13" font-weight="600" font-family="monospace">I = 2.3 mA</text>
+<text x="230" y="190" fill="${TC}" font-size="13">← V = ? →</text>
+${wire(210,160,210,185)}${wire(370,160,370,185)}
+<line x1="215" y1="185" x2="365" y2="185" stroke="${YC}" stroke-width="1.5" stroke-dasharray="5,3"/>
+</svg>`,
+opts:['A) 2.043 V','B) 20.43 V','C) 10.81 V','D) 108.1 V'],ans:2,
+exp:'V = I × R = 0.0023 A × 4700 Ω = 10.81 V'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Find the unknown resistance R_x given that','I = 4.5 mA and the supply is V_s = 18 V.'])}
+${wire(100,80,100,114)}${vsrc(100,140,'18 V')}${wire(100,166,100,230)}
+${wire(100,80,195,80)}
+<rect x="195" y="67" width="170" height="26" rx="4" fill="#1a2a0d" stroke="${YC}" stroke-width="2"/>
+<text x="280" y="85" text-anchor="middle" fill="${YC}" font-size="13" font-weight="700" font-family="monospace">R_x = ?</text>
+${wire(365,80,460,80)}${wire(460,80,460,230)}${wire(100,230,460,230)}
+${arr(385,72,425,72)}
+<text x="420" y="66" fill="${GC}" font-size="12" font-family="monospace">4.5 mA</text>
+</svg>`,
+opts:['A) 81 Ω','B) 4 000 Ω','C) 2 500 Ω','D) 1 250 Ω'],ans:1,
+exp:'R = V ÷ I = 18 V ÷ 0.0045 A = 4 000 Ω = 4 kΩ'},
+
+{cat:'ohm',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['A 50 mA current flows through a resistor R = 680 Ω.','Calculate the power P dissipated in the resistor.'])}
+${wire(100,80,100,230)}${wire(100,80,190,80)}
+${res(190,67,170,26,'R = 680 Ω')}
+${wire(360,80,460,80)}${wire(460,80,460,230)}${wire(100,230,460,230)}
+${arr(120,72,160,72)}
+<text x="155" y="66" fill="${GC}" font-size="12" font-family="monospace">I = 50 mA</text>
+<text x="280" y="230" text-anchor="middle" fill="${YC}" font-size="16" font-weight="700" font-family="monospace">P = ?</text>
+</svg>`,
+opts:['A) 34.0 W','B) 0.85 W','C) 1.70 W','D) 13.6 W'],ans:2,
+exp:'P = I² × R = (0.05)² × 680 = 0.0025 × 680 = 1.70 W'},
+
+// ─── VOLTAGE DIVIDERS ────────────────────────────────────────────────────────
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Unloaded voltage divider: V_in = 15 V.','Calculate V_out across R2.'])}
+${wire(180,40,180,80)}
+<text x="180" y="36" text-anchor="middle" fill="${GC}" font-size="13" font-weight="700">V_in = 15 V</text>
+${res(160,80,40,70,'R1',RC)}
+<text x="215" y="120" fill="${RC}" font-size="11" font-family="monospace">10 kΩ</text>
+${wire(180,150,180,165)}
+${node(180,165,'',YC)}
+${wire(180,165,280,165)}
+<text x="295" y="170" fill="${YC}" font-size="13" font-weight="700" font-family="monospace">V_out = ?</text>
+${res(160,165,40,70,'R2',PC)}
+<text x="215" y="205" fill="${PC}" font-size="11" font-family="monospace">4.7 kΩ</text>
+${wire(180,235,180,260)}
+<line x1="160" y1="260" x2="200" y2="260" stroke="${W}" stroke-width="2"/>
+<line x1="168" y1="265" x2="192" y2="265" stroke="${W}" stroke-width="1.5"/>
+<line x1="174" y1="270" x2="186" y2="270" stroke="${W}" stroke-width="1"/>
+</svg>`,
+opts:['A) 7.51 V','B) 4.80 V','C) 3.21 V','D) 10.20 V'],ans:1,
+exp:'V_out = V_in × R2÷(R1+R2) = 15 × 4700÷14700 = 4.796 V ≈ 4.80 V'},
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Same divider (R1=10 kΩ, R2=4.7 kΩ, V_in=15 V)','but now a 10 kΩ load R_L is connected across R2.','What is the loaded V_out?'])}
+${wire(160,40,160,75)}
+<text x="160" y="36" text-anchor="middle" fill="${GC}" font-size="12" font-weight="700">V_in = 15 V</text>
+${res(140,75,40,60,'R1',RC)}<text x="193" y="108" fill="${RC}" font-size="10" font-family="monospace">10 kΩ</text>
+${wire(160,135,160,148)}${wire(160,148,280,148)}${wire(160,148,160,160)}
+${res(140,160,40,60,'R2',PC)}<text x="193" y="193" fill="${PC}" font-size="10" font-family="monospace">4.7 kΩ</text>
+${res(290,160,40,60,'RL','#ff7b72')}<text x="343" y="193" fill="#ff7b72" font-size="10" font-family="monospace">10 kΩ</text>
+${wire(310,148,310,160)}
+${wire(160,220,310,220)}${wire(310,220,310,220)}
+${wire(160,220,160,245)}<line x1="142" y1="245" x2="178" y2="245" stroke="${W}" stroke-width="2"/>
+<line x1="149" y1="250" x2="171" y2="250" stroke="${W}" stroke-width="1.5"/>
+<text x="360" y="175" fill="${YC}" font-size="13" font-weight="700" font-family="monospace">V_out = ?</text>
+</svg>`,
+opts:['A) 4.80 V','B) 2.91 V','C) 3.63 V','D) 5.17 V'],ans:2,
+exp:'R2∥RL = 4700∥10000 = 3197 Ω. V_out = 15 × 3197÷(10000+3197) = 3.63 V'},
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Design a voltage divider with V_in = 15 V and R1 = 8.2 kΩ.','Choose R2 so that V_out = 5 V.'])}
+${wire(200,30,200,70)}<text x="200" y="26" text-anchor="middle" fill="${GC}" font-size="13" font-weight="700">15 V</text>
+${res(180,70,40,60,'R1',RC)}<text x="233" y="103" fill="${RC}" font-size="11" font-family="monospace">8.2 kΩ</text>
+${wire(200,130,200,145)}${wire(200,145,320,145)}
+<text x="340" y="150" fill="${GC}" font-size="13" font-weight="700" font-family="monospace">V_out = 5 V</text>
+<rect x="180" y="145" width="40" height="60" rx="4" fill="#1a2a0d" stroke="${YC}" stroke-width="2"/>
+<text x="200" y="180" text-anchor="middle" fill="${YC}" font-size="12" font-weight="700" font-family="monospace">R2 = ?</text>
+${wire(200,205,200,240)}<line x1="182" y1="240" x2="218" y2="240" stroke="${W}" stroke-width="2"/>
+<line x1="189" y1="246" x2="211" y2="246" stroke="${W}" stroke-width="1.5"/>
+</svg>`,
+opts:['A) 2.73 kΩ','B) 8.20 kΩ','C) 4.10 kΩ','D) 5.60 kΩ'],ans:2,
+exp:'5 = 15×R2÷(8200+R2) → 5(8200+R2) = 15R2 → 41000 = 10R2 → R2 = 4100 Ω = 4.1 kΩ'},
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Three resistors form a series divider. V_in = 12 V.','Find the voltage V_B across R2 (middle resistor).'])}
+${wire(120,28,120,65)}<text x="120" y="24" text-anchor="middle" fill="${GC}" font-size="13" font-weight="700">V_in = 12 V</text>
+${res(100,65,40,50,'R1',RC)}<text x="153" y="93" fill="${RC}" font-size="10" font-family="monospace">3 kΩ</text>
+${wire(120,115,120,128)}${node(120,128,'A',TC,'right')}
+${res(100,135,40,50,'R2',PC)}<text x="153" y="163" fill="${PC}" font-size="10" font-family="monospace">3 kΩ</text>
+${wire(120,185,120,198)}${node(120,198,'B',TC,'right')}
+${res(100,205,40,50,'R3',GC)}<text x="153" y="233" fill="${GC}" font-size="10" font-family="monospace">6 kΩ</text>
+${wire(120,255,120,268)}<line x1="102" y1="268" x2="138" y2="268" stroke="${W}" stroke-width="2"/>
+<text x="300" y="145" fill="${TC}" font-size="12">V_B = V across R2</text>
+<text x="300" y="163" fill="${YC}" font-size="16" font-weight="700" font-family="monospace">V_B = ?</text>
+</svg>`,
+opts:['A) 2.00 V','B) 6.00 V','C) 4.00 V','D) 3.00 V'],ans:3,
+exp:'R_T = 3k+3k+6k = 12 kΩ. I = 12÷12000 = 1 mA. V_B = I×R2 = 1mA×3kΩ = 3 V'},
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Find the Thévenin equivalent (V_th and R_th)','of this voltage divider at terminals A–B.','V_s = 10 V,  R1 = 6 kΩ,  R2 = 4 kΩ'])}
+${wire(140,50,140,90)}${vsrc(140,118,'10 V')}${wire(140,146,140,230)}
+${wire(140,50,220,50)}${res(220,37,100,26,'R1 = 6 kΩ',RC)}${wire(320,50,400,50)}
+${wire(400,50,400,130)}${wire(400,130,460,130)}
+${node(400,130,'A',YC,'right')}
+${res(380,130,40,70,'R2',PC)}<text x="433" y="168" fill="${PC}" font-size="11" font-family="monospace">4 kΩ</text>
+${wire(400,200,400,230)}${wire(140,230,400,230)}
+${wire(400,230,460,230)}${node(400,230,'B',YC,'right')}
+<line x1="462" y1="130" x2="462" y2="230" stroke="${YC}" stroke-width="1.5" stroke-dasharray="6,3"/>
+<text x="480" y="175" text-anchor="middle" fill="${YC}" font-size="12">V_th?</text>
+<text x="480" y="192" text-anchor="middle" fill="${PC}" font-size="12">R_th?</text>
+</svg>`,
+opts:['A) V_th=6V, R_th=2.4kΩ','B) V_th=4V, R_th=2.4kΩ','C) V_th=4V, R_th=10kΩ','D) V_th=6V, R_th=6kΩ'],ans:1,
+exp:'V_th = 10×4k÷(6k+4k) = 4 V.  R_th = 6k∥4k = 24k÷10k = 2.4 kΩ'},
+
+{cat:'vd',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['In the divider below, what is the total','current I_total drawn from the 24 V supply?','R1 = 12 kΩ,  R2 = 6 kΩ'])}
+${wire(130,55,130,95)}${vsrc(130,123,'24 V')}${wire(130,151,130,240)}
+${wire(130,55,215,55)}${res(215,42,130,26,'R1 = 12 kΩ',RC)}${wire(345,55,430,55)}
+${wire(430,55,430,240)}${wire(130,240,430,240)}
+${wire(280,55,280,70)}${res(260,70,40,70,'R2',PC)}<text x="312" y="108" fill="${PC}" font-size="11" font-family="monospace">6 kΩ</text>
+${wire(280,140,280,240)}
+${arr(350,47,390,47)}
+<text x="395" y="41" fill="${YC}" font-size="13" font-weight="700" font-family="monospace">I = ?</text>
+</svg>`,
+opts:['A) 1.33 mA','B) 4.00 mA','C) 2.67 mA','D) 2.00 mA'],ans:0,
+exp:'R_T = R1 + R2 = 12k+6k = 18 kΩ. I = 24÷18000 = 1.333 mA ≈ 1.33 mA'},
+
+// ─── SMT COMPONENTS ──────────────────────────────────────────────────────────
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['What resistance value does this SMD resistor indicate?'],'28')}
+<rect x="120" y="70" width="320" height="140" rx="12" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+${chip(170,100,220,80,'472')}
+<text x="280" y="220" text-anchor="middle" fill="#8b949e" font-size="11">Standard 3-digit EIA marking code</text>
+<text x="280" y="240" text-anchor="middle" fill="#8b949e" font-size="11">Format: [2 sig. digits][multiplier exponent]</text>
+</svg>`,
+opts:['A) 472 Ω','B) 4.72 kΩ','C) 4.7 kΩ','D) 47.2 Ω'],ans:2,
+exp:'"472" → first two digits = 47, third digit = multiplier 10² = 100. Value = 47 × 100 = 4700 Ω = 4.7 kΩ'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Identify the resistance value of this SMD component.'],'28')}
+<rect x="120" y="70" width="320" height="140" rx="12" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+${chip(170,100,220,80,'2R2')}
+<text x="280" y="220" text-anchor="middle" fill="#8b949e" font-size="11">The letter \'R\' acts as a decimal point in SMD codes.</text>
+</svg>`,
+opts:['A) 22 Ω','B) 220 Ω','C) 0.22 Ω','D) 2.2 Ω'],ans:3,
+exp:'"2R2" — the R is the decimal point → 2.2 Ω. Common for low-value resistors.'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['This SMD resistor uses a 4-digit marking code.','What is its resistance value?'],'28')}
+<rect x="120" y="70" width="320" height="140" rx="12" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+${chip(165,100,230,80,'4702')}
+<text x="280" y="220" text-anchor="middle" fill="#8b949e" font-size="11">4-digit code: [3 sig. digits][multiplier exponent]</text>
+</svg>`,
+opts:['A) 4.702 kΩ','B) 4.70 Ω','C) 47.0 kΩ','D) 470 Ω'],ans:2,
+exp:'"4702" → significant digits = 470, multiplier = 10² = 100. Value = 470 × 100 = 47 000 Ω = 47 kΩ'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['This 1% precision SMD resistor uses the EIA-96 code system.','Code "68B" is printed on it. What is its value?'],'28')}
+<rect x="120" y="65" width="320" height="150" rx="12" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+${chip(165,90,230,80,'68B','#a0a4c8','#e0e0e0','#111')}
+<text x="280" y="215" text-anchor="middle" fill="#8b949e" font-size="11">EIA-96: 2-digit code from lookup table + letter multiplier</text>
+<text x="280" y="233" text-anchor="middle" fill="#8b949e" font-size="10">Multiplier: A=×1 B=×10 C=×100 D=×1k E=×10k</text>
+</svg>`,
+opts:['A) 49.9 Ω','B) 4.99 kΩ','C) 499 Ω','D) 6.8 kΩ'],ans:1,
+exp:'EIA-96 code 68 = 499 (from lookup table). Multiplier B = ×10. Value = 499 × 10 = 4990 Ω = 4.99 kΩ'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['This ceramic capacitor has the marking shown below.','What is its capacitance value?'],'28')}
+<rect x="140" y="65" width="280" height="150" rx="12" fill="#1a1a2e" stroke="#30363d" stroke-width="1"/>
+<!-- MLCC capacitor body -->
+<rect x="185" y="95" width="190" height="90" rx="6" fill="#8B8B6B" stroke="#666" stroke-width="2"/>
+<rect x="185" y="95" width="28" height="90" rx="4" fill="#c8c8c8" stroke="#aaa" stroke-width="1"/>
+<rect x="347" y="95" width="28" height="90" rx="4" fill="#c8c8c8" stroke="#aaa" stroke-width="1"/>
+<text x="280" y="146" text-anchor="middle" fill="#111" font-size="26" font-weight="700" font-family="monospace">104</text>
+<text x="280" y="248" text-anchor="middle" fill="#8b949e" font-size="11">Unit: pF (picofarads) — same 3-digit system as resistors</text>
+</svg>`,
+opts:['A) 104 pF','B) 10 nF','C) 100 nF','D) 1.04 µF'],ans:2,
+exp:'"104" → 10 × 10⁴ pF = 100 000 pF = 100 nF = 0.1 µF. The "4" is the power of 10 multiplier.'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['Which package size corresponds to the dimensions','1.0 mm × 0.5 mm?'],'28')}
+<!-- 0402 to scale vs 0805 -->
+<rect x="100" y="80" width="320" height="120" rx="8" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+<!-- 0805 larger -->
+<rect x="130" y="100" width="80" height="50" rx="3" fill="#c8a44a" stroke="#8a6a00" stroke-width="1.5"/>
+<rect x="130" y="100" width="14" height="50" rx="2" fill="#d0d0d0"/>
+<rect x="196" y="100" width="14" height="50" rx="2" fill="#d0d0d0"/>
+<text x="170" y="132" text-anchor="middle" fill="#111" font-size="10" font-weight="700">0805</text>
+<text x="170" y="168" text-anchor="middle" fill="#8b949e" font-size="10">2.0 × 1.25 mm</text>
+<!-- 0402 smaller -->
+<rect x="255" y="110" width="40" height="26" rx="2" fill="#c8a44a" stroke="#8a6a00" stroke-width="1.5"/>
+<rect x="255" y="110" width="7" height="26" rx="1" fill="#d0d0d0"/>
+<rect x="288" y="110" width="7" height="26" rx="1" fill="#d0d0d0"/>
+<text x="275" y="127" text-anchor="middle" fill="#111" font-size="8" font-weight="700">0402</text>
+<text x="275" y="155" text-anchor="middle" fill="${YC}" font-size="10" font-weight="700">← This size</text>
+<!-- Scale bar -->
+<line x1="130" y1="90" x2="210" y2="90" stroke="#fff" stroke-width="1"/>
+<text x="170" y="88" text-anchor="middle" fill="#fff" font-size="9">2.0 mm</text>
+</svg>`,
+opts:['A) 0201','B) 0402','C) 0603','D) 0805'],ans:1,
+exp:'0402 package = 1.0 mm × 0.5 mm. The name "0402" comes from the imperial dimensions: 0.04" × 0.02"'},
+
+{cat:'smt',svg:`<svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg">${BG}
+${qtxt(['This SMD component is found in a power supply filter.','Based on its appearance, identify the component type.'],'28')}
+<!-- SMD Inductor - wire-wound, ferrite body, often dark grey/black with spiral visible -->
+<rect x="170" y="85" width="220" height="100" rx="8" fill="#2a2a2a" stroke="#555" stroke-width="2"/>
+<!-- Spiral winding pattern suggestion -->
+<ellipse cx="280" cy="135" rx="60" ry="25" fill="none" stroke="#888" stroke-width="2"/>
+<ellipse cx="280" cy="135" rx="45" ry="18" fill="none" stroke="#888" stroke-width="1.5"/>
+<ellipse cx="280" cy="135" rx="30" ry="12" fill="none" stroke="#888" stroke-width="1.5"/>
+<ellipse cx="280" cy="135" rx="15" ry="6" fill="#444" stroke="#888" stroke-width="1"/>
+<!-- Terminals -->
+<rect x="170" y="85" width="22" height="100" rx="4" fill="#c0c0c0" stroke="#888" stroke-width="1"/>
+<rect x="368" y="85" width="22" height="100" rx="4" fill="#c0c0c0" stroke="#888" stroke-width="1"/>
+<!-- Marking -->
+<text x="280" y="200" text-anchor="middle" fill="#aaa" font-size="11" font-family="monospace">100</text>
+<text x="280" y="240" text-anchor="middle" fill="#8b949e" font-size="11">Non-polarized; used for energy storage and filtering</text>
+</svg>`,
+opts:['A) Film Capacitor','B) NTC Thermistor','C) SMD Ferrite Bead','D) SMD Inductor'],ans:3,
+exp:'SMD inductors have a wire-wound construction on a ferrite core. The "100" marking means 10 × 10⁰ = 10 µH. Non-polarized; used in filters and DC-DC converters.'}
+
+];
+
+// ── Quiz State ────────────────────────────────────────────────────────────────
+let cur=0,score=0,answered=false;
+
+function catClass(c){return c==='ohm'?'cat-ohm':c==='vd'?'cat-vd':'cat-smt';}
+function catLabel(c){return c==='ohm'?"Ohm's Law":c==='vd'?'Voltage Dividers':'SMT Components';}
+
+function startQuiz(){
+  document.getElementById('start-screen').classList.remove('active');
+  document.getElementById('quiz-screen').classList.add('active');
+  cur=0;score=0;answered=false;
+  showQuestion();
+}
+
+function showQuestion(){
+  const q=questions[cur];
+  answered=false;
+  document.getElementById('q-num').textContent=cur+1;
+  const pct=((cur)/questions.length)*100;
+  document.getElementById('prog-bar').style.width=pct+'%';
+  const cb=document.getElementById('cat-badge');
+  cb.textContent=catLabel(q.cat);
+  cb.className='cat-badge '+catClass(q.cat);
+  document.getElementById('svg-wrap').innerHTML=q.svg;
+  const fb=document.getElementById('feedback');
+  fb.className='feedback';fb.innerHTML='';
+  document.getElementById('btn-next').className='btn-next';
+  const opts=document.getElementById('options');
+  opts.innerHTML='';
+  const labels=['A','B','C','D'];
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt-btn';
+    b.innerHTML=`<span class="label">${labels[i]}</span>${o.slice(3)}`;
+    b.onclick=()=>selectAnswer(i);
+    opts.appendChild(b);
+  });
+}
+
+function selectAnswer(idx){
+  if(answered)return;
+  answered=true;
+  const q=questions[cur];
+  const btns=document.querySelectorAll('.opt-btn');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===q.ans){
+    score++;
+    btns[idx].classList.add('correct');
+    showFeedback(true,q.exp);
+  }else{
+    btns[idx].classList.add('wrong');
+    btns[q.ans].classList.add('correct');
+    showFeedback(false,q.exp);
+  }
+  document.getElementById('btn-next').className='btn-next show';
+  document.getElementById('btn-next').textContent=cur===questions.length-1?'See Results →':'Next →';
+}
+
+function showFeedback(ok,exp){
+  const fb=document.getElementById('feedback');
+  fb.className='feedback show '+(ok?'correct':'wrong');
+  fb.innerHTML=`<strong>${ok?'✓ Correct!':'✗ Incorrect'}</strong>${exp}`;
+}
+
+function nextQuestion(){
+  cur++;
+  if(cur>=questions.length){showResults();return;}
+  showQuestion();
+}
+
+function showResults(){
+  document.getElementById('quiz-screen').classList.remove('active');
+  document.getElementById('result-screen').classList.add('active');
+  const pct=Math.round((score/questions.length)*100);
+  const circle=document.getElementById('score-ring-circle');
+  const circ=364.4;
+  circle.style.strokeDashoffset=circ-(circ*pct/100);
+  circle.style.stroke=pct>=80?'#3fb950':pct>=60?'#d29922':'#f85149';
+  document.getElementById('score-pct').textContent=pct+'%';
+  document.getElementById('r-correct').textContent=score;
+  document.getElementById('r-wrong').textContent=questions.length-score;
+  document.getElementById('r-pct').textContent=pct+'%';
+  const msgs=['Needs significant review — revisit core EE fundamentals.',
+    'Basic understanding shown — review calculations and SMT codes.',
+    'Competent — a few areas need polish.',
+    'Strong performance — ready for a technical interview!',
+    'Excellent! Outstanding electronics knowledge.'];
+  const tier=Math.min(4,Math.floor(pct/20));
+  document.getElementById('result-title').textContent=
+    pct===100?'Perfect Score!':pct>=80?'Great Work!':pct>=60?'Good Effort':'Keep Studying';
+  document.getElementById('result-sub').textContent=msgs[tier];
+  document.getElementById('prog-bar').style.width='100%';
+}
+
+function restart(){
+  document.getElementById('result-screen').classList.remove('active');
+  document.getElementById('start-screen').classList.add('active');
+}
+</script>
+</body>
+</html>
